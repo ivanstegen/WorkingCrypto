@@ -12,7 +12,6 @@ import { Button } from "@/components/ui/button"
 import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from "@/components/ui/command"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { useFavorites } from "@/components/favorites-provider"
-import { useDebounce } from "@/hooks/use-debounce"
 import { getCachedSuggestions, cacheSuggestions, SearchSuggestion } from "@/lib/search-utils"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -33,17 +32,23 @@ export function SearchBar() {
   const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [showSuggestions, setShowSuggestions] = useState(false)
-  const searchInputRef = useRef<HTMLInputElement>(null)
-  const suggestionsRef = useRef<HTMLDivElement>(null)
   const [open, setOpen] = useState(false)
-  const [loading, setLoading] = useState(false)
   const [recentSearches, setRecentSearches] = useState<Cryptocurrency[]>([])
   const inputRef = useRef<HTMLInputElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
   const { favorites, isFavorite } = useFavorites()
 
-  // Debounce the search query to reduce API calls
-  const debouncedQuery = useDebounce(searchQuery, 500) // Increased debounce time
+  // Handle click outside to close suggestions
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setOpen(false)
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [])
 
   // Load recent searches from localStorage
   useEffect(() => {
@@ -78,13 +83,13 @@ export function SearchBar() {
   // Fetch search suggestions
   useEffect(() => {
     const fetchSuggestions = async () => {
-      if (!debouncedQuery.trim()) {
+      if (!searchQuery.trim()) {
         setSuggestions([])
         return
       }
 
       // Check cache first
-      const cachedSuggestions = getCachedSuggestions(debouncedQuery)
+      const cachedSuggestions = getCachedSuggestions(searchQuery)
       if (cachedSuggestions) {
         setSuggestions(cachedSuggestions)
         return
@@ -96,7 +101,7 @@ export function SearchBar() {
       try {
         const response = await fetch(
           `https://api.coingecko.com/api/v3/search?query=${encodeURIComponent(
-            debouncedQuery,
+            searchQuery,
           )}`,
           {
             headers: {
@@ -118,7 +123,7 @@ export function SearchBar() {
         }))
 
         // Cache the suggestions
-        cacheSuggestions(debouncedQuery, newSuggestions)
+        cacheSuggestions(searchQuery, newSuggestions)
 
         setSuggestions(newSuggestions)
       } catch (err) {
@@ -131,49 +136,33 @@ export function SearchBar() {
     }
 
     fetchSuggestions()
-  }, [debouncedQuery])
+  }, [searchQuery])
 
-  // Handle click outside to close suggestions
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        suggestionsRef.current &&
-        !suggestionsRef.current.contains(event.target as Node) &&
-        searchInputRef.current &&
-        !searchInputRef.current.contains(event.target as Node)
-      ) {
-        setShowSuggestions(false)
-      }
-    }
-
-    document.addEventListener("mousedown", handleClickOutside)
-    return () => document.removeEventListener("mousedown", handleClickOutside)
-  }, [])
-
-  // Update URL when debounced query changes
+  // Update URL when search query changes
   useEffect(() => {
     if (pathname !== "/") return
 
-    if (debouncedQuery) {
-      router.push(`/?q=${encodeURIComponent(debouncedQuery.trim())}`)
+    if (searchQuery) {
+      router.push(`/?q=${encodeURIComponent(searchQuery.trim())}`)
     } else if (searchParams.has("q")) {
       router.push("/")
     }
-  }, [debouncedQuery, pathname, router, searchParams])
+  }, [searchQuery, pathname, router, searchParams])
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (searchQuery.trim()) {
+  const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && searchQuery.trim()) {
       router.push(`/?q=${encodeURIComponent(searchQuery.trim())}`)
       setOpen(false)
-    } else {
-      router.push("/")
     }
   }
 
   const clearSearch = () => {
     setSearchQuery("")
-    router.push("/")
+    setSuggestions([])
+    setOpen(false)
+    if (pathname === "/") {
+      router.replace("/")
+    }
     inputRef.current?.focus()
   }
 
@@ -182,67 +171,68 @@ export function SearchBar() {
       id: suggestion.id,
       name: suggestion.name,
       symbol: suggestion.symbol,
-      image: `https://cryptologos.cc/logos/${suggestion.id}-${suggestion.symbol.toLowerCase()}-logo.png`,
-    };
+      image: suggestion.image || suggestion.thumb || "/placeholder.svg"
+    }
+    
     saveRecentSearch(crypto)
     router.push(`/crypto/${crypto.id}`)
-    setOpen(false)
   }
 
   return (
-    <form onSubmit={handleSearch} className="relative w-full md:w-80">
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <div className="relative">
-            <Input
-              ref={inputRef}
-              type="search"
-              placeholder="Search cryptocurrencies..."
-              className="pr-16"
-              value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value)
-                if (e.target.value.length >= 2) {
-                  setOpen(true)
-                } else {
-                  setOpen(false)
-                }
-              }}
-              onFocus={() => {
-                if ((searchQuery.length >= 2 && suggestions.length > 0) || recentSearches.length > 0) {
-                  setOpen(true)
-                }
-              }}
-            />
-            {isLoading && (
-              <div className="absolute right-16 top-0 flex h-10 w-10 items-center justify-center">
-                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-              </div>
-            )}
-            {searchQuery && (
-              <Button
-                type="button"
-                size="icon"
-                variant="ghost"
-                className="absolute right-8 top-0 h-10 w-10"
-                onClick={clearSearch}
-              >
-                <X className="h-4 w-4" />
-                <span className="sr-only">Clear search</span>
-              </Button>
-            )}
-            <Button type="submit" size="icon" variant="ghost" className="absolute right-0 top-0 h-10 w-10">
-              <Search className="h-4 w-4" />
-              <span className="sr-only">Search</span>
-            </Button>
+    <div ref={containerRef} className="relative w-full md:w-80">
+      <div className="relative">
+        <Input
+          ref={inputRef}
+          placeholder="Search cryptocurrencies..."
+          className="pr-16"
+          value={searchQuery}
+          onChange={(e) => {
+            setSearchQuery(e.target.value)
+            if (e.target.value.length >= 2) {
+              setOpen(true)
+            } else {
+              setOpen(false)
+            }
+          }}
+          onKeyDown={handleSearch}
+          onFocus={() => {
+            if ((searchQuery.length >= 2 && suggestions.length > 0) || recentSearches.length > 0) {
+              setOpen(true)
+            }
+          }}
+        />
+        {isLoading && (
+          <div className="absolute right-16 top-0 flex h-10 w-10 items-center justify-center">
+            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
           </div>
-        </PopoverTrigger>
-        <PopoverContent
-          className="w-[var(--radix-popover-trigger-width)] p-0"
-          align="start"
-          sideOffset={4}
-          alignOffset={0}
-        >
+        )}
+        <div className="absolute right-0 top-0 flex h-10">
+          {searchQuery && (
+            <Button
+              type="button"
+              size="icon"
+              variant="ghost"
+              className="h-10 w-10"
+              onClick={clearSearch}
+            >
+              <X className="h-4 w-4" />
+              <span className="sr-only">Clear search</span>
+            </Button>
+          )}
+          <Button 
+            type="button" 
+            size="icon" 
+            variant="ghost" 
+            className="h-10 w-10"
+            onClick={() => inputRef.current?.focus()}
+          >
+            <Search className="h-4 w-4" />
+            <span className="sr-only">Search</span>
+          </Button>
+        </div>
+      </div>
+      {(open && (suggestions.length > 0 || recentSearches.length > 0 || favorites.length > 0)) && (
+        <div className="absolute z-50 mt-1 w-full rounded-md border bg-popover shadow-md">
           <ScrollArea className="h-[300px]">
             <Command>
               <CommandList>
@@ -338,8 +328,8 @@ export function SearchBar() {
               </CommandList>
             </Command>
           </ScrollArea>
-        </PopoverContent>
-      </Popover>
-    </form>
+        </div>
+      )}
+    </div>
   )
 }

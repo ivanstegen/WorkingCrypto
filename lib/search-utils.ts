@@ -2,6 +2,8 @@ export interface SearchSuggestion {
   id: string
   name: string
   symbol: string
+  thumb?: string
+  image?: string
 }
 
 const CACHE_EXPIRY = 10 * 60 * 1000 // 10 minutes

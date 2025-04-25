@@ -852,17 +852,25 @@ export const formatters = {
   currency(value: number | undefined, currency = "usd", options: Intl.NumberFormatOptions = {}): string {
     if (value === undefined || isNaN(value)) return "N/A"
 
+    const currencySymbols: Record<string, string> = {
+      usd: "$",
+      eur: "€",
+      gbp: "£",
+      jpy: "¥"
+    }
+
     try {
-      return new Intl.NumberFormat("en-US", {
-        style: "currency",
-        currency: currency.toUpperCase(),
+      const formattedValue = new Intl.NumberFormat("en-US", {
         minimumFractionDigits: 2,
         maximumFractionDigits: 6,
+        useGrouping: true,
         ...options,
       }).format(value)
+
+      return `${currencySymbols[currency.toLowerCase()] || currency.toUpperCase()} ${formattedValue}`
     } catch (error) {
       console.error("Error formatting currency:", error)
-      return `${currency.toUpperCase()} ${value}`
+      return `${currencySymbols[currency.toLowerCase()] || currency.toUpperCase()} ${value}`
     }
   },
 
@@ -870,11 +878,11 @@ export const formatters = {
     if (value === undefined || isNaN(value)) return "N/A"
 
     try {
-      if (value >= 1e12) return `${(value / 1e12).toFixed(2)}T`
-      if (value >= 1e9) return `${(value / 1e9).toFixed(2)}B`
-      if (value >= 1e6) return `${(value / 1e6).toFixed(2)}M`
-      if (value >= 1e3) return `${(value / 1e3).toFixed(2)}K`
-      return value.toString()
+      if (value >= 1e12) return `$${(value / 1e12).toFixed(2)} T`
+      if (value >= 1e9) return `$${(value / 1e9).toFixed(2)} B`
+      if (value >= 1e6) return `$${(value / 1e6).toFixed(2)} M`
+      if (value >= 1e3) return `$${(value / 1e3).toFixed(2)} K`
+      return `$${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
     } catch (error) {
       console.error("Error formatting large number:", error)
       return String(value)
