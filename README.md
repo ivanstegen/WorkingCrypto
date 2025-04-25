@@ -1,109 +1,93 @@
-# Cryptocurrency Tracker
+# CryptoTracker
 
-A modern, responsive cryptocurrency tracking application built with Next.js, TypeScript, and Tailwind CSS. Track real-time cryptocurrency prices, market data, and trends with a beautiful and intuitive interface.
+## English
 
-## Features
+### Description
+CryptoTracker is a modern web application built with Next.js that allows users to track cryptocurrency prices, search for specific cryptocurrencies, and manage their favorite crypto assets in real-time.
 
-- 🔍 Real-time cryptocurrency search with suggestions
-- 📊 Detailed cryptocurrency information and charts
-- 💰 Multiple currency support (USD, EUR, GBP, JPY)
-- ⭐ Favorite cryptocurrencies
-- 📱 Responsive design for all devices
-- 🔄 Real-time price updates
-- 📈 Interactive price charts
-- 🔒 Secure API integration with multiple fallback sources
+### Features
+- Real-time cryptocurrency price tracking
+- Advanced search functionality with auto-suggestions
+- Favorite cryptocurrency management
+- Recent search history
+- Multiple API source fallback system
+- Responsive design for all devices
+- Dark/Light mode support
 
-## Tech Stack
-
-- **Framework**: Next.js 14
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS
-- **UI Components**: Shadcn/ui
-- **State Management**: React Context
-- **API Integration**: CoinGecko API with fallback to CoinCap and CryptoCompare
-- **Charts**: TradingView Lightweight Charts
-- **Icons**: Lucide Icons
-
-## Getting Started
-
-### Prerequisites
-
-- Node.js 18.0 or later
-- npm or yarn
+### Technologies Used
+- Next.js 14
+- React
+- TypeScript
+- Tailwind CSS
+- Radix UI
+- Lucide Icons
+- Multiple Cryptocurrency APIs (CoinGecko, CryptoCompare, CoinCap, Binance)
 
 ### Installation
-
 1. Clone the repository:
-   ```bash
-   git clone https://github.com/yourusername/cryptocurrency-tracker.git
-   cd cryptocurrency-tracker
-   ```
+```bash
+git clone https://github.com/yourusername/crypto-tracker.git
+```
 
 2. Install dependencies:
-   ```bash
-   npm install
-   # or
-   yarn install
-   ```
-
-3. Create a `.env.local` file in the root directory and add your API keys:
-   ```
-   NEXT_PUBLIC_COINGECKO_API_KEY=your_coingecko_api_key
-   ```
-
-4. Run the development server:
-   ```bash
-   npm run dev
-   # or
-   yarn dev
-   ```
-
-5. Open [http://localhost:3000](http://localhost:3000) in your browser.
-
-## Project Structure
-
-```
-cryptocurrency-tracker/
-├── app/                    # Next.js app directory
-│   ├── api/               # API routes
-│   ├── crypto/            # Cryptocurrency detail pages
-│   └── page.tsx           # Home page
-├── components/            # React components
-│   ├── ui/               # UI components
-│   ├── charts/           # Chart components
-│   └── ...               # Other components
-├── hooks/                # Custom React hooks
-├── lib/                  # Utility functions and API clients
-├── types/                # TypeScript type definitions
-└── public/               # Static assets
+```bash
+cd crypto-tracker
+npm install
 ```
 
-## API Integration
+3. Run the development server:
+```bash
+npm run dev
+```
 
-The application uses multiple cryptocurrency data sources with automatic fallback:
+4. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-1. CoinGecko (Primary)
-2. CoinCap (Fallback)
-3. CryptoCompare (Fallback)
-
-This ensures high availability and reliability of data even if one API is down.
-
-## Contributing
-
+### Contributing
 Contributions are welcome! Please feel free to submit a Pull Request.
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+---
 
-## License
+## Bulgarian (Български)
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+### Описание
+CryptoTracker е модерно уеб приложение, изградено с Next.js, което позволява на потребителите да следят цените на криптовалути, да търсят конкретни криптовалути и да управляват любимите си крипто активи в реално време.
 
-## Acknowledgments
+### Функционалности
+- Проследяване на цените на криптовалути в реално време
+- Разширена функционалност за търсене с автоматични предложения
+- Управление на любими криптовалути
+- История на последните търсения
+- Система за резервни API източници
+- Адаптивен дизайн за всички устройства
+- Поддръжка на тъмен/светъл режим
 
-- [CoinGecko](https://www.coingecko.com/) for providing the cryptocurrency data API
-- [TradingView](https://www.tradingview.com/) for the lightweight charts library
-- [Shadcn/ui](https://ui.shadcn.com/) for the beautiful UI components 
+### Използвани Технологии
+- Next.js 14
+- React
+- TypeScript
+- Tailwind CSS
+- Radix UI
+- Lucide Icons
+- Множество Криптовалутни API-та (CoinGecko, CryptoCompare, CoinCap, Binance)
+
+### Инсталация
+1. Клониране на хранилището:
+```bash
+git clone https://github.com/yourusername/crypto-tracker.git
+```
+
+2. Инсталиране на зависимостите:
+```bash
+cd crypto-tracker
+npm install
+```
+
+3. Стартиране на сървъра за разработка:
+```bash
+npm run dev
+```
+
+4. Отворете [http://localhost:3000](http://localhost:3000) в браузъра.
+
+### Принос към проекта
+Приносът към проекта е добре дошъл! Не се колебайте да изпратите Pull Request. 
